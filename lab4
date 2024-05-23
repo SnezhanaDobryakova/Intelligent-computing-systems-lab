@@ -1,0 +1,29 @@
+% База данных рецептов
+recipe(pizza, [flour, yeast, tomato_sauce, cheese, pepperoni]).
+recipe(dough, [flour, yeast]).
+recipe(salad_dressing, [potatoes, carrots, beef, canned_blueberries, mayonnaise]).
+recipe(borscht, [beetroot, potato, carrot, beef, cabbage, tomato_paste]).
+
+% Имеющиеся ингредиенты
+available_ingredients([flour, yeast, tomato_sauce, cheese, pepperoni]).
+
+% Правило для поиска рецептов по имеющимся ингредиентам
+recipe_according_to_available_ingredients(Recipe) :-
+	recipe(Recipe, Ingredients),
+    subset(Ingredients, Available),
+    available_ingredients(Available).
+
+% Вывод найденных рецептов
+find_recipes(Recipes) :-
+	findall(Recipe, recipe_according_to_available_ingredients(Recipe), Recipes).
+
+% Вывод рецептов на экран
+print_recipes([]).
+print_recipes([Recipe|Tail]) :-
+	write('Recipe: '), write(Recipe), nl,
+	print_recipes(Tail).
+
+% Запуск программы
+start :-
+	find_recipes(Recipes),
+    print_recipes(Recipes).
