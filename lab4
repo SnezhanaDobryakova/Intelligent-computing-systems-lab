@@ -1,29 +1,32 @@
 % База данных рецептов
 recipe(pizza, [flour, yeast, tomato_sauce, cheese, pepperoni]).
 recipe(dough, [flour, yeast]).
+recipe(cheese_tortilla, [flour, yeast, cheese]).
 recipe(salad_dressing, [potatoes, carrots, beef, canned_blueberries, mayonnaise]).
 recipe(borscht, [beetroot, potato, carrot, beef, cabbage, tomato_paste]).
+recipe(omelet, [egg, milk]).
+recipe(fried_egg, [egg]).
 
 % Имеющиеся ингредиенты
-available_ingredients([flour, yeast, tomato_sauce, cheese, pepperoni]).
+available_ingredients([egg,flour, yeast, tomato_sauce, cheese, pepperoni]).
 
-% Правило для поиска рецептов по имеющимся ингредиентам
-recipe_according_to_available_ingredients(Recipe) :-
-	recipe(Recipe, Ingredients),
-    subset(Ingredients, Available),
-    available_ingredients(Available).
+% Правило для поиска рецептов по ингредиентам
+recipe_for_available_ingredients(Recipe) :-
+    recipe(Recipe, Needed_Ingredients),
+    available_ingredients(Available_Ingredients),
+    forall(member(Ingredient, Needed_Ingredients), member(Ingredient, Available_Ingredients)).
 
-% Вывод найденных рецептов
-find_recipes(Recipes) :-
-	findall(Recipe, recipe_according_to_available_ingredients(Recipe), Recipes).
+% Список подходящих рецептов
+find_available_recipes(Recipes) :-
+    findall(Recipe, recipe_for_available_ingredients(Recipe), Recipes).
 
 % Вывод рецептов на экран
 print_recipes([]).
 print_recipes([Recipe|Tail]) :-
-	write('Recipe: '), write(Recipe), nl,
-	print_recipes(Tail).
+    write(Recipe), nl,
+    print_recipes(Tail).
 
 % Запуск программы
 start :-
-	find_recipes(Recipes),
+    find_available_recipes(Recipes),
     print_recipes(Recipes).
