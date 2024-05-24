@@ -30,3 +30,4 @@ print_recipes([Recipe|Tail]) :-
 start :-
     find_available_recipes(Recipes),
     print_recipes(Recipes).
+
