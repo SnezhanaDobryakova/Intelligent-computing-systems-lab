@@ -21,13 +21,13 @@ find_available_recipes(Recipes) :-
     findall(Recipe, recipe_for_available_ingredients(Recipe), Recipes).
 
 % Вывод рецептов на экран
-print_recipes([]).
-print_recipes([Recipe|Tail]) :-
-    write(Recipe), nl,
-    print_recipes(Tail).
+print_recipes([],_).
+print_recipes([Recipe|Tail],Index) :-
+    write(Index), write('. '),write(Recipe), nl,
+    NewIndex is Index + 1,
+    print_recipes(Tail,NewIndex).
 
 % Запуск программы
 start :-
     find_available_recipes(Recipes),
-    print_recipes(Recipes).
-
+    print_recipes(Recipes,1).
