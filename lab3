@@ -15,7 +15,7 @@ def new_board():
     board[4][4] = PL1
     return board
 
-#Отрисовка поля
+#Отображение поля
 def display_board(board):
     print("  " + " ".join(str(i) for i in range(1, bsize + 1)))
     for i in range(bsize):
