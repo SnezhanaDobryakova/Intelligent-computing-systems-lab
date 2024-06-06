@@ -1,0 +1,125 @@
+import random
+
+bsize = 8
+PL1 = 'X'
+PL2 = 'O'
+empty = '.'
+
+#Начальное игровое поле
+def new_board():
+    board = [[empty for _ in range(bsize)] for _ in range(bsize)]
+    board[3][3] = PL1
+    board[3][4] = PL2
+    board[4][3] = PL2
+    board[4][4] = PL1
+    return board
+
+#Отрисовка поля
+def display_board(board):
+    print("  " + " ".join(str(i) for i in range(1, bsize + 1)))
+    for i in range(bsize):
+        print(str(i + 1) + " " + " ".join(board[i]))
+    print()
+
+#Возможные ходы
+def possible_moves(board, player):
+    valid_moves = []
+    for i in range(bsize):
+        for j in range(bsize):
+            if board[i][j] == empty and validMove(board, player, i, j):
+                valid_moves.append((i, j))
+    return valid_moves
+
+#Проверяем допустим ли ход
+def validMove(board, player, row, col):
+    if board[row][col] != empty:
+        return False
+    #Проверяем все направления
+    for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
+        x, y = row + dx, col + dy
+        if 0 <= x < bsize and 0 <= y < bsize and board[x][y] == (PL2 if player == PL1 else PL1):
+            x += dx
+            y += dy
+            while 0 <= x < bsize and 0 <= y < bsize:
+                if board[x][y] == empty:
+                    break
+                if board[x][y] == player:
+                    return True
+                x += dx
+                y += dy
+    return False
+
+#Выполнение хода
+def makeMove(board, player, row, col):
+    board[row][col] = player
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            if dx == dy == 0:
+                continue
+            flip_chip(board, player, row, col, dx, dy)
+
+#Переворачиваем шишки
+def flip_chip(board, player, row, col, dx, dy):
+    x, y = row + dx, col + dy
+    if x < 0 or x >= bsize or y < 0 or y >= bsize or board[x][y] == empty or board[x][y] == player:
+        return
+
+    flip = []
+    while 0 <= x < bsize and 0 <= y < bsize:
+        if board[x][y] == empty:
+            return
+        if board[x][y] == player:
+            for i, j in flip:
+                board[i][j] = player
+            return
+        flip.append((x, y))
+        x += dx
+        y += dy
+
+def choosing_move(board, player):
+    valid_moves = possible_moves(board, player)
+    if not valid_moves:
+        return None
+    return random.choice(valid_moves)
+
+def play_game():
+    board = new_board()
+    now_player = PL1
+
+    while True:
+        display_board(board)
+        print("Ход игрока",now_player)
+
+        valid_moves = possible_moves(board, now_player)
+        if not valid_moves:
+            print("Игрок", now_player, "не может сделать ход.")
+            if possible_moves(board, PL1 if now_player == PL2 else PL2):
+                now_player = PL1 if now_player == PL2 else PL2
+                continue
+            else:
+                break
+
+        row, col = choosing_move(board, now_player)
+        makeMove(board, now_player, row, col)
+        print("Игрок",now_player,"сделал ход:",row+1,col+1)
+        now_player = PL1 if now_player == PL2 else PL2
+
+        # Проверяем, есть ли победитель
+        if all(board[row][col] != empty for row in range(bsize) for col in range(bsize)):
+            display_board(board)
+            player1_score = sum(row.count(PL1) for row in board)
+            player2_score = sum(row.count(PL2) for row in board)
+            print("Итог:")
+            print(PL1," ? ",PL2)
+            if player1_score > player2_score:
+                print(player1_score,">", player2_score)
+                print("Победил игрок",PL1)
+            elif player2_score > player1_score:
+                print(player1_score,"<",player2_score)
+                print("Победил игрок",PL2)
+            else:
+                print(player1_score,"=",player2_score)
+                print("Ничья!")
+            return
+
+play_game()
