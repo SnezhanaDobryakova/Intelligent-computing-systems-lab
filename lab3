@@ -1,4 +1,4 @@
-#Реверси
+
 import random
 
 bsize = 8
@@ -110,7 +110,7 @@ def play_game():
             display_board(board)
             player1_score = sum(row.count(PL1) for row in board)
             player2_score = sum(row.count(PL2) for row in board)
-            print("Итог:")
+            print("Игра окончена!")
             print(PL1," ? ",PL2)
             if player1_score > player2_score:
                 print(player1_score,">", player2_score)
