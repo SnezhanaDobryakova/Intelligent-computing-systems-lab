@@ -1,3 +1,4 @@
+#Реверси
 import random
 
 bsize = 8
