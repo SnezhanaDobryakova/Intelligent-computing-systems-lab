@@ -1,4 +1,5 @@
 #Реверси
+
 import random
 
 bsize = 8
@@ -6,7 +7,6 @@ PL1 = 'X'
 PL2 = 'O'
 empty = '.'
 
-#Начальное игровое поле
 def new_board():
     board = [[empty for _ in range(bsize)] for _ in range(bsize)]
     board[3][3] = PL1
@@ -15,7 +15,6 @@ def new_board():
     board[4][4] = PL1
     return board
 
-#Отображение поля
 def display_board(board):
     print("  " + " ".join(str(i) for i in range(1, bsize + 1)))
     for i in range(bsize):
@@ -77,12 +76,72 @@ def flip_chip(board, player, row, col, dx, dy):
         x += dx
         y += dy
 
-def choosing_move(board, player):
+#Оценка хода
+def score_move(board, player, row, col):
+    score = 0
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            if dx == dy == 0:
+                continue
+            score += count_flip(board, player, row, col, dx, dy)
+    if (row == 0 or row == bsize - 1 or col == 0 or col == bsize - 1):
+        if ((row == 0 and col == 0) or(row == 0 and col == bsize - 1) or(row == bsize - 1 and col == 0) or(row == bsize - 1 and col == bsize - 1)):
+            score += 3
+        else:
+            score += 2
+    return score
+
+def count_flip(board, player, row, col, dx, dy):
+    x, y = row + dx, col + dy
+    if x < 0 or x >= bsize or y < 0 or y >= bsize or board[x][y] == empty or board[x][y] == player:
+        return 0
+
+    flip = []
+    while 0 <= x < bsize and 0 <= y < bsize:
+        if board[x][y] == empty:
+            return 0
+        if board[x][y] == player:
+            return len(flip)
+        flip.append((x, y))
+        x += dx
+        y += dy
+    return 0
+
+#Выбор хода
+def choosing_move(board, player,random_or_best):
     valid_moves = possible_moves(board, player)
     if not valid_moves:
         return None
-    return random.choice(valid_moves)
+    
+    if random_or_best == "random":
+        return random.choice(valid_moves)
+    elif random_or_best == "best":
+        best_score = -1
+        best_moves = []
+        for move in valid_moves:
+            score = score_move(board, player, *move)
+            if score > best_score:
+                best_score = score
+                best_moves = [move]
+            elif score == best_score:
+                best_moves.append(move)
+        return random.choice(best_moves)
 
+def end_game(board):
+    player1_score = sum(row.count(PL1) for row in board)
+    player2_score = sum(row.count(PL2) for row in board)
+    print("Игра окончена!")
+    print(PL1," ? ",PL2)
+    if player1_score > player2_score:
+        print(player1_score,">", player2_score)
+        print("Победил игрок",PL1)
+    elif player2_score > player1_score:
+        print(player1_score,"<",player2_score)
+        print("Победил игрок",PL2)
+    else:
+        print(player1_score,"=",player2_score)
+        print("Ничья!")
+    
 def play_game():
     board = new_board()
     now_player = PL1
@@ -98,29 +157,22 @@ def play_game():
                 now_player = PL1 if now_player == PL2 else PL2
                 continue
             else:
+                now_player = PL1 if now_player == PL2 else PL2
+                print("Ход игрока",now_player)
+                print("Игрок", now_player, "не может сделать ход.")
+                end_game(board)
                 break
 
-        row, col = choosing_move(board, now_player)
+        random_or_best = random.choice(["random","best"])
+        row, col = choosing_move(board, now_player, random_or_best)
         makeMove(board, now_player, row, col)
         print("Игрок",now_player,"сделал ход:",row+1,col+1)
         now_player = PL1 if now_player == PL2 else PL2
 
-        # Проверяем, есть ли победитель
+        # Проверяем есть ли победитель
         if all(board[row][col] != empty for row in range(bsize) for col in range(bsize)):
             display_board(board)
-            player1_score = sum(row.count(PL1) for row in board)
-            player2_score = sum(row.count(PL2) for row in board)
-            print("Игра окончена!")
-            print(PL1," ? ",PL2)
-            if player1_score > player2_score:
-                print(player1_score,">", player2_score)
-                print("Победил игрок",PL1)
-            elif player2_score > player1_score:
-                print(player1_score,"<",player2_score)
-                print("Победил игрок",PL2)
-            else:
-                print(player1_score,"=",player2_score)
-                print("Ничья!")
+            end_game(board)
             return
-
+            
 play_game()
